@@ -43,12 +43,12 @@ jobs:
         if: success()
         run: |
           curl -X POST -H 'Content-type: application/json' \
-          --data '{"text":"✅ BUILD SUCCESS: employee-management-cicd pipeline passed!"}' \
+          --data '{"text":"BUILD SUCCESS: employee-management-cicd pipeline passed!"}' \
           ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Notify Slack on Failure
         if: failure()
         run: |
           curl -X POST -H 'Content-type: application/json' \
-          --data '{"text":"❌ BUILD FAILED: employee-management-cicd pipeline failed!"}' \
+          --data '{"text":" BUILD FAILED: employee-management-cicd pipeline failed!"}' \
           ${{ secrets.SLACK_WEBHOOK_URL }}
