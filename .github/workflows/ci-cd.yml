@@ -27,29 +27,36 @@ jobs:
         run: mvn test
 
       - name: SonarCloud Analysis
-        run: mvn sonar:sonar -Dsonar.projectKey=employee-management-Java-webapp-cicd-project -Dsonar.organization=laxmi7676 -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-      - name: Build Docker Image
-      - run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/employee-management-cicd:latest .
+        run: mvn sonar:sonar -Dsonar.projectKey=employee-management-Java-webapp-cicd-project -Dsonar.organization=laxmi7676 -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
       - name: Login to Docker Hub
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+        env:
+          DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKER_PASS: ${{ secrets.DOCKER_PASSWORD }}
+        run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+
+      - name: Build Docker Image
+        env:
+          DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+        run: docker build -t $DOCKER_USER/employee-management-cicd:latest .
 
       - name: Push to Docker Hub
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/employee-management-cicd:latest
+        env:
+          DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+        run: docker push $DOCKER_USER/employee-management-cicd:latest
 
       - name: Notify Slack on Success
         if: success()
         run: |
           curl -X POST -H 'Content-type: application/json' \
-          --data '{"text":"✅ BUILD SUCCESS: employee-management-cicd pushed to Docker Hub!"}' \
+          --data '{"text":"BUILD SUCCESS: employee-management-cicd pushed to Docker Hub!"}' \
           ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Notify Slack on Failure
         if: failure()
         run: |
           curl -X POST -H 'Content-type: application/json' \
-          --data '{"text":"❌ BUILD FAILED: employee-management-cicd pipeline failed!"}' \
+          --data '{"text":"BUILD FAILED: employee-management-cicd pipeline failed!"}' \
           ${{ secrets.SLACK_WEBHOOK_URL }}
