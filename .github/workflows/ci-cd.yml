@@ -34,12 +34,14 @@ jobs:
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
+
       - name: Build and Push Docker Image
         run: |
-          IMAGE_NAME="${{ secrets.DOCKERHUB_USERNAME }}/employee-management-cicd:latest"
-          echo "Building image: $IMAGE_NAME"
-          docker build -t "$IMAGE_NAME" .
-          docker push "$IMAGE_NAME"
+                  DOCKER_USER=$(echo "${{ secrets.DOCKERHUB_USERNAME }}" | tr -d '[:space:]')
+                  IMAGE_NAME="$DOCKER_USER/employee-management-cicd:latest"
+                  echo "Building image: $IMAGE_NAME"
+                  docker build -t "$IMAGE_NAME" .
+                  docker push "$IMAGE_NAME"
 
       - name: Notify Slack on Success
         if: success()
